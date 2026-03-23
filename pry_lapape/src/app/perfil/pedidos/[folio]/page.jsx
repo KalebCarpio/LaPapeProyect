@@ -1,10 +1,18 @@
 "use client";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import Header from "@/components/Header";
 import { ordersGet } from "@/lib/storage";
 
-export default function PedidoDetallePage({ params }){
-  const { folio } = params ?? {};
-  const order = ordersGet().find(o => o.folio === folio);
+export default function PedidoDetallePage() {
+  const params = useParams();
+  const folio = params?.folio;
+  const [order, setOrder] = useState(null);
+
+  useEffect(() => {
+    const nextOrder = ordersGet().find((item) => item.folio === folio) || null;
+    setOrder(nextOrder);
+  }, [folio]);
 
   return (
     <>

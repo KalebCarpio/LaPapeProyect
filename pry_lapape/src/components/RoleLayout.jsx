@@ -9,7 +9,7 @@ import { useAuth } from "@/components/AuthProvider";
 const DASHBOARD_BY_ROLE = {
   CLIENTE: "/cliente",
   TRABAJADOR: "/trabajador",
-  DUENO: "/dueño",
+  DUENO: "/dueno",
   ADMIN: "/admin", // por si después tienes panel admin
 };
 
@@ -17,6 +17,7 @@ export default function RoleLayout({
   title,
   subtitle,
   requiredRole, // "CLIENTE" | "TRABAJADOR" | "DUENO" | "ADMIN"
+  maxWidthClassName = "max-w-6xl",
   children,
 }) {
   const router = useRouter();
@@ -79,7 +80,7 @@ export default function RoleLayout({
     <>
       <Header />
       <main className="min-h-[calc(100vh-80px)] bg-[#FFF9E6] px-4 py-8">
-        <section className="max-w-6xl mx-auto">
+        <section className={`${maxWidthClassName} mx-auto`}>
           <header className="mb-6 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold text-[#2B2A28]">

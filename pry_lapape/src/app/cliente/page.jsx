@@ -43,7 +43,7 @@ export default function ClientePage() {
             <QuickAction
               label="Mis pedidos"
               icon={<Truck size={16} />}
-              onClick={() => (location.href = "/perfil_pedidos")}
+              onClick={() => (location.href = "/perfil/pedidos")}
             />
             <QuickAction
               label="Editar perfil"
@@ -115,7 +115,7 @@ export default function ClientePage() {
 
           <button
             type="button"
-            onClick={() => (location.href = "/perfil_pedidos")}
+            onClick={() => (location.href = "/perfil/pedidos")}
             className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#FFD54F] hover:bg-[#FFC107] text-[#111827] text-sm font-semibold px-4 py-2.5 shadow-[0_10px_25px_rgba(245,158,11,0.45)] transition"
           >
             Ir a mis pedidos
@@ -128,7 +128,7 @@ export default function ClientePage() {
         <StatCard
           title="Mis pedidos"
           desc="Revisa estados y facturas"
-          href="/perfil_pedidos"
+          href="/perfil/pedidos"
           icon={<FileText size={18} />}
         />
         <StatCard

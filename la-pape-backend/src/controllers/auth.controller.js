@@ -591,6 +591,12 @@ export async function logout(req, res, next) {
 
 export async function loginWithGoogle(req, res, next) {
   try {
+    if (!process.env.GOOGLE_CLIENT_ID) {
+      return res.status(503).json({
+        error: "El login con Google no está configurado en este entorno",
+      });
+    }
+
     const { idToken } = req.body;
 
     if (!idToken) {

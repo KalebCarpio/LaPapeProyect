@@ -7,13 +7,22 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev --name init_prisma",
+    "prisma:push": "prisma db push",
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "node prisma/seed.js",
     "test": "echo \"No hay tests todavía\" && exit 0"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   },
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
     "@getbrevo/brevo": "^3.0.1",
+    "@prisma/client": "^6.6.0",
     "bcrypt": "^6.0.0",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
@@ -26,8 +35,9 @@
     "mongoose": "^8.19.2",
     "morgan": "^1.10.1",
     "nodemailer": "^7.0.10",
-    "resend": "^6.5.2",
     "pg": "^8.13.1",
+    "prisma": "^6.6.0",
+    "resend": "^6.5.2",
     "sequelize": "^6.37.5"
   },
   "devDependencies": {

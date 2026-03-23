@@ -13,6 +13,10 @@ function buildURL(base, path) {
   return `${normalizedBase}${normalizedPath}`;
 }
 
+export function apiURL(path) {
+  return buildURL(ENV_BASE, path);
+}
+
 export async function api(path, { method = "POST", body, headers } = {}) {
   const url = buildURL(ENV_BASE, path);
   const token = (typeof window !== "undefined")

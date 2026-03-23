@@ -10,6 +10,9 @@ import { api, decodeJWT } from "@/lib/api";
 import { useAuth } from "@/components/AuthProvider";
 import { GoogleLogin } from "@react-oauth/google"; // 👈 NUEVO
 
+const GOOGLE_CLIENT_ID =
+  process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID?.trim() || "";
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -44,7 +47,7 @@ export default function LoginPage() {
   const goToDashboard = (role) => {
     const normalized = (role || "").toUpperCase();
     if (normalized === "DUENO" || normalized === "ADMIN") {
-      router.push("/dueño");
+      router.push("/dueno");
     } else if (normalized === "TRABAJADOR" || normalized === "EMPLEADO") {
       router.push("/trabajador");
     } else {
@@ -277,13 +280,15 @@ export default function LoginPage() {
             </div>
 
             {/* Login con Google real */}
-            <div className="flex justify-center">
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={handleGoogleError}
-                width="100%"
-              />
-            </div>
+            {GOOGLE_CLIENT_ID ? (
+              <div className="flex justify-center">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  width="100%"
+                />
+              </div>
+            ) : null}
           </div>
         </div>
 

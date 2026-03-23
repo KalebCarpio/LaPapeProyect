@@ -45,8 +45,11 @@ const navByRole = {
     { href: "/clientes", label: "Clientes" },
   ],
   DUENO: [
-    { href: "/dueño", label: "Inicio" },
+    { href: "/dueno", label: "Inicio" },
     { href: "/reportes", label: "Reportes" },
+    { href: "/productos", label: "Productos" },
+    { href: "/monitoreo-bd", label: "Monitoreo" },
+    { href: "/respaldos", label: "Respaldos" },
     { href: "/caja", label: "Caja" },
     { href: "/configuracion", label: "Configuración" },
   ],

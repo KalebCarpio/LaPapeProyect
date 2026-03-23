@@ -75,7 +75,7 @@ function Verificar2FAContent() {
   const goToDashboard = (role) => {
     const normalized = (role || "").toUpperCase();
     if (normalized === "DUENO" || normalized === "ADMIN") {
-      router.push("/dueño");
+      router.push("/dueno");
     } else if (normalized === "TRABAJADOR" || normalized === "EMPLEADO") {
       router.push("/trabajador");
     } else {

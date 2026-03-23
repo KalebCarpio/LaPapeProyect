@@ -1,0 +1,270 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  DUENO
+  TRABAJADOR
+  CLIENTE
+
+  @@map("enum_users_rol")
+}
+
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+
+  @@map("enum_users_provider")
+}
+
+enum LoginMethod {
+  PASSWORD_ONLY
+  PASSWORD_2FA
+  PASSWORD_SECRET
+
+  @@map("enum_users_loginMethod")
+}
+
+enum MovementType {
+  ENTRADA
+  SALIDA
+  AJUSTE
+}
+
+enum BackupType {
+  COMPLETO
+  UNA_TABLA
+  VARIAS_TABLAS
+}
+
+enum BackupStatus {
+  GENERADO
+  ELIMINADO
+  ERROR
+}
+
+model User {
+  id                   String            @id @default(uuid()) @db.Uuid
+  nombre               String
+  email                String            @unique
+  passwordHash         String
+  rol                  Role              @default(CLIENTE)
+  provider             AuthProvider      @default(LOCAL)
+  providerId           String?
+  avatarUrl            String?
+  isVerified           Boolean           @default(false)
+  verifyCode           String?
+  verifyCodeExpires    DateTime?
+  twoFAEnabled         Boolean           @default(true)
+  loginMethod          LoginMethod       @default(PASSWORD_2FA)
+  secretQuestion       String?
+  secretAnswerHash     String?
+  twoFAHash            String?
+  twoFAExp             DateTime?
+  resetOTPHash         String?
+  resetOTPExp          DateTime?
+  resetAttempts        Int               @default(0)
+  resetLastAttemptAt   DateTime?
+  resetBlockedUntil    DateTime?
+  failedLoginAttempts  Int               @default(0)
+  lockUntil            DateTime?
+  passwordChangesCount Int               @default(0)
+  passwordChangesDate  DateTime?
+  lastLoginAt          DateTime?
+  sessions             Json              @default("[]")
+  sales                Sale[]
+  auditLogs            SystemAuditLog[]
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  @@index([rol])
+  @@map("users")
+}
+
+model Product {
+  id                 String              @id @default(uuid()) @db.Uuid
+  name               String              @db.VarChar(160)
+  sku                String?             @unique @db.VarChar(60)
+  description        String?
+  categoryLabel      String?             @map("category") @db.VarChar(80)
+  brandLabel         String?             @map("brand") @db.VarChar(80)
+  categoryId         String?             @map("category_id") @db.Uuid
+  brandId            String?             @map("brand_id") @db.Uuid
+  supplierId         String?             @map("supplier_id") @db.Uuid
+  price              Decimal             @default(0) @db.Decimal(10, 2)
+  stock              Int                 @default(0)
+  imageUrl           String?             @map("image_url")
+  isActive           Boolean             @default(true) @map("is_active")
+  categoryRelation   Category?           @relation("CategoryToProducts", fields: [categoryId], references: [id])
+  brandRelation      Brand?              @relation("BrandToProducts", fields: [brandId], references: [id])
+  supplier           Supplier?           @relation(fields: [supplierId], references: [id])
+  saleDetails        SaleDetail[]
+  inventoryMovements InventoryMovement[]
+  branchStocks       BranchStock[]
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+
+  @@index([categoryId])
+  @@index([brandId])
+  @@index([supplierId])
+  @@index([isActive])
+  @@map("products")
+}
+
+model Category {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String    @unique @db.VarChar(120)
+  products  Product[] @relation("CategoryToProducts")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@map("categories")
+}
+
+model Brand {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String    @unique @db.VarChar(120)
+  products  Product[] @relation("BrandToProducts")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@map("brands")
+}
+
+model Supplier {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String    @db.VarChar(160)
+  telefono  String?   @db.VarChar(40)
+  email     String?   @unique @db.VarChar(160)
+  products  Product[]
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@map("suppliers")
+}
+
+model Customer {
+  id        String   @id @default(uuid()) @db.Uuid
+  nombre    String   @db.VarChar(160)
+  telefono  String?  @db.VarChar(40)
+  email     String?  @unique @db.VarChar(160)
+  sales     Sale[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("customers")
+}
+
+model Sale {
+  id          String       @id @default(uuid()) @db.Uuid
+  userId      String       @map("user_id") @db.Uuid
+  customerId  String?      @map("customer_id") @db.Uuid
+  branchId    String?      @map("branch_id") @db.Uuid
+  total       Decimal      @db.Decimal(10, 2)
+  user        User         @relation(fields: [userId], references: [id])
+  customer    Customer?    @relation(fields: [customerId], references: [id])
+  branch      Branch?      @relation(fields: [branchId], references: [id])
+  saleDetails SaleDetail[]
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([customerId])
+  @@index([branchId])
+  @@map("sales")
+}
+
+model SaleDetail {
+  id        String   @id @default(uuid()) @db.Uuid
+  saleId    String   @map("sale_id") @db.Uuid
+  productId String   @map("product_id") @db.Uuid
+  cantidad  Int
+  precio    Decimal  @db.Decimal(10, 2)
+  sale      Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([saleId])
+  @@index([productId])
+  @@map("sale_details")
+}
+
+model InventoryMovement {
+  id          String       @id @default(uuid()) @db.Uuid
+  productId    String       @map("product_id") @db.Uuid
+  tipo         MovementType
+  cantidad     Int
+  descripcion  String?
+  product      Product      @relation(fields: [productId], references: [id])
+  fecha        DateTime     @default(now())
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  @@index([productId])
+  @@index([tipo])
+  @@map("inventory_movements")
+}
+
+model Branch {
+  id           String        @id @default(uuid()) @db.Uuid
+  name         String        @db.VarChar(160)
+  direccion    String
+  sales        Sale[]
+  branchStocks BranchStock[]
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  @@map("branches")
+}
+
+model BranchStock {
+  id        String   @id @default(uuid()) @db.Uuid
+  branchId  String   @map("branch_id") @db.Uuid
+  productId String   @map("product_id") @db.Uuid
+  stock     Int      @default(0)
+  branch    Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([branchId, productId])
+  @@index([productId])
+  @@map("branch_stock")
+}
+
+model BackupLog {
+  id             String       @id @default(uuid()) @db.Uuid
+  backupType     BackupType   @map("backup_type")
+  fileName       String       @map("file_name")
+  includedTables Json         @default("[]") @map("included_tables")
+  filePath       String       @map("file_path")
+  fileSize       BigInt       @default(0) @map("file_size")
+  status         BackupStatus @default(GENERADO)
+  fecha          DateTime     @default(now())
+  descripcion    String?
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  @@map("backup_logs")
+}
+
+model SystemAuditLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String?  @map("user_id") @db.Uuid
+  accion      String   @db.VarChar(120)
+  descripcion String
+  fecha       DateTime @default(now())
+  user        User?    @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("system_audit_logs")
+}

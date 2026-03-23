@@ -8,6 +8,7 @@ import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 
 import { connectDB, sequelize } from "./db.js";
+import { connectPrisma, disconnectPrisma } from "./lib/prisma.js";
 
 import authRoutes from "./routes/auth.routes.js";
 import productRoutes from "./routes/product.routes.js";
@@ -15,7 +16,6 @@ import adminRoutes from "./routes/admin.routes.js";
 
 // ✅ Importa modelos para que sequelize.sync() los cree
 import "./models/User.js";
-import "./models/Product.js";
 
 // ✅ Para probar envío directo
 import { sendMail, templates } from "./services/email.service.js";
@@ -167,21 +167,33 @@ const PORT = process.env.PORT || 4000;
     console.log("MAIL_FROM_EMAIL:", process.env.MAIL_FROM_EMAIL);
     console.log("FRONTEND_ORIGIN(S):", process.env.FRONTEND_ORIGINS || process.env.FRONTEND_ORIGIN);
 
-    if (typeof fetch === "undefined") {
-      throw new Error("'fetch' no está disponible: usa Node 18+ o agrega un polyfill");
-    }
-
     await connectDB();
     await sequelize.sync();
-    console.log("✅ Tablas sincronizadas");
+    console.log("✅ Tablas Sequelize sincronizadas");
+    await connectPrisma();
 
     const server = app.listen(PORT, () => {
       console.log(`🚀 API escuchando en puerto ${PORT}`);
     });
 
+    const shutdown = async () => {
+      await disconnectPrisma().catch(() => undefined);
+      server.close(() => process.exit(0));
+    };
+
+    process.on("SIGINT", shutdown);
+    process.on("SIGTERM", shutdown);
+
     const keepAliveUrl = process.env.KEEP_ALIVE_URL;
 
     if (keepAliveUrl) {
+      if (typeof fetch === "undefined") {
+        console.warn(
+          "⚠️ Keep-alive desactivado: 'fetch' no está disponible en esta versión de Node."
+        );
+        return;
+      }
+
       const minutes = Number(process.env.KEEP_ALIVE_INTERVAL_MINUTES || 14);
       const intervalMs = Math.max(1, minutes) * 60 * 1000;
 

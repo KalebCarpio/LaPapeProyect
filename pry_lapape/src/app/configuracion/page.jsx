@@ -51,7 +51,7 @@ const resolveHomePath = (user) => {
   if (r.includes("trab")) return "/trabajador";
   if (r.includes("client")) return "/cliente";
   if (r.includes("due") || r.includes("duen") || r.includes("owner") || r.includes("admin"))
-    return "/dueño"; // o "/dueno" según tu carpeta
+    return "/dueno";
   return "/";
 };
 
