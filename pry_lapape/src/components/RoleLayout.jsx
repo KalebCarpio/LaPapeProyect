@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import { useAuth } from "@/components/AuthProvider";
+import AdminShell from "@/components/AdminShell";
 
 // A dónde mandar a cada rol si intenta entrar donde no debe
 const DASHBOARD_BY_ROLE = {
@@ -17,11 +18,20 @@ export default function RoleLayout({
   title,
   subtitle,
   requiredRole, // "CLIENTE" | "TRABAJADOR" | "DUENO" | "ADMIN"
+  requiredRoles,
   maxWidthClassName = "max-w-6xl",
   children,
 }) {
   const router = useRouter();
   const { user } = useAuth();
+  const normalizedRoles = (
+    Array.isArray(requiredRoles) && requiredRoles.length > 0
+      ? requiredRoles
+      : requiredRole
+        ? [requiredRole]
+        : []
+  ).map((role) => String(role || "").toUpperCase());
+  const isOwnerView = normalizedRoles.some((role) => role === "DUENO" || role === "ADMIN");
 
   useEffect(() => {
     // Si no hay sesión → al login
@@ -31,14 +41,14 @@ export default function RoleLayout({
     }
 
     const role = (user.rol || user.role || "").toUpperCase();
-    const expected = requiredRole ? requiredRole.toUpperCase() : null;
+    const expected = normalizedRoles;
 
     // Si el rol del usuario NO coincide con el requerido → redirigir a su panel
-    if (role && expected && role !== expected) {
+    if (role && expected.length > 0 && !expected.includes(role)) {
       const target = DASHBOARD_BY_ROLE[role] || "/login";
       router.replace(target);
     }
-  }, [user, requiredRole, router]);
+  }, [user, normalizedRoles, router]);
 
   // Mientras no hay usuario (cargando / redirigiendo)
   if (!user) {
@@ -53,10 +63,10 @@ export default function RoleLayout({
   }
 
   const role = (user.rol || user.role || "").toUpperCase();
-  const expected = requiredRole ? requiredRole.toUpperCase() : null;
+  const expected = normalizedRoles;
 
   // Por seguridad extra: si el rol no coincide
-  if (expected && role !== expected) {
+  if (expected.length > 0 && !expected.includes(role)) {
     return (
       <>
         <Header />
@@ -76,6 +86,14 @@ export default function RoleLayout({
   }
 
   // Layout normal con fondo CREMITA en toda la pantalla
+  if (isOwnerView) {
+    return (
+      <AdminShell title={title} subtitle={subtitle} maxWidthClassName={maxWidthClassName}>
+        {children}
+      </AdminShell>
+    );
+  }
+
   return (
     <>
       <Header />

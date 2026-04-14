@@ -49,6 +49,40 @@ enum BackupStatus {
   ERROR
 }
 
+enum OfferDiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum OfferScope {
+  PRODUCT
+  CATEGORY
+}
+
+enum SaleStatus {
+  COMPLETADA
+  CANCELADA
+  PARCIALMENTE_DEVUELTA
+  DEVUELTA
+}
+
+enum PaymentMethod {
+  EFECTIVO
+  TARJETA
+  TRANSFERENCIA
+  MIXTO
+}
+
+enum CommercialEventType {
+  VENTA_CREADA
+  TICKET_REIMPRESO
+  VENTA_CANCELADA
+  DEVOLUCION_TOTAL
+  DEVOLUCION_PARCIAL
+  ESTADO_ACTUALIZADO
+  DESCUENTO_APLICADO
+}
+
 model User {
   id                   String            @id @default(uuid()) @db.Uuid
   nombre               String
@@ -79,6 +113,10 @@ model User {
   lastLoginAt          DateTime?
   sessions             Json              @default("[]")
   sales                Sale[]
+  cancelledSales       Sale[]            @relation("CancelledSales")
+  refundedSales        Sale[]            @relation("RefundedSales")
+  processedReturns     SaleReturn[]
+  commercialEvents     CommercialEvent[]
   auditLogs            SystemAuditLog[]
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @updatedAt
@@ -104,6 +142,7 @@ model Product {
   categoryRelation   Category?           @relation("CategoryToProducts", fields: [categoryId], references: [id])
   brandRelation      Brand?              @relation("BrandToProducts", fields: [brandId], references: [id])
   supplier           Supplier?           @relation(fields: [supplierId], references: [id])
+  offers             Offer[]             @relation("ProductOffers")
   saleDetails        SaleDetail[]
   inventoryMovements InventoryMovement[]
   branchStocks       BranchStock[]
@@ -118,13 +157,43 @@ model Product {
 }
 
 model Category {
-  id        String    @id @default(uuid()) @db.Uuid
-  name      String    @unique @db.VarChar(120)
-  products  Product[] @relation("CategoryToProducts")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String    @unique @db.VarChar(120)
+  description String?
+  isActive    Boolean   @default(true) @map("is_active")
+  products    Product[] @relation("CategoryToProducts")
+  offers      Offer[]   @relation("CategoryOffers")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([isActive])
 
   @@map("categories")
+}
+
+model Offer {
+  id            String            @id @default(uuid()) @db.Uuid
+  name          String            @db.VarChar(160)
+  description   String?
+  discountType  OfferDiscountType @map("discount_type")
+  discountValue Decimal           @map("discount_value") @db.Decimal(10, 2)
+  appliesTo     OfferScope        @map("applies_to")
+  productId     String?           @map("product_id") @db.Uuid
+  categoryId    String?           @map("category_id") @db.Uuid
+  startsAt      DateTime          @map("starts_at") @db.Date
+  endsAt        DateTime          @map("ends_at") @db.Date
+  isActive      Boolean           @default(true) @map("is_active")
+  product       Product?          @relation("ProductOffers", fields: [productId], references: [id])
+  category      Category?         @relation("CategoryOffers", fields: [categoryId], references: [id])
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+  saleDetails   SaleDetail[]
+
+  @@index([productId])
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([appliesTo])
+  @@map("offers")
 }
 
 model Brand {
@@ -162,38 +231,103 @@ model Customer {
 }
 
 model Sale {
-  id          String       @id @default(uuid()) @db.Uuid
-  userId      String       @map("user_id") @db.Uuid
-  customerId  String?      @map("customer_id") @db.Uuid
-  branchId    String?      @map("branch_id") @db.Uuid
-  total       Decimal      @db.Decimal(10, 2)
-  user        User         @relation(fields: [userId], references: [id])
-  customer    Customer?    @relation(fields: [customerId], references: [id])
-  branch      Branch?      @relation(fields: [branchId], references: [id])
-  saleDetails SaleDetail[]
-  createdAt   DateTime     @default(now()) @map("created_at")
-  updatedAt   DateTime     @updatedAt @map("updated_at")
+  id                String            @id @default(uuid()) @db.Uuid
+  folio             String            @unique @db.VarChar(32)
+  userId            String            @map("user_id") @db.Uuid
+  customerId        String?           @map("customer_id") @db.Uuid
+  branchId          String?           @map("branch_id") @db.Uuid
+  paymentMethod     PaymentMethod     @map("payment_method")
+  status            SaleStatus        @default(COMPLETADA)
+  subtotal          Decimal           @db.Decimal(10, 2)
+  discount          Decimal           @default(0) @db.Decimal(10, 2)
+  total             Decimal           @db.Decimal(10, 2)
+  notes             String?
+  reprintCount      Int               @default(0) @map("reprint_count")
+  cancelledAt       DateTime?         @map("cancelled_at")
+  cancelledByUserId String?           @map("cancelled_by_user_id") @db.Uuid
+  cancelReason      String?           @map("cancel_reason")
+  returnedAt        DateTime?         @map("returned_at")
+  lastRefundedById  String?           @map("last_refunded_by_id") @db.Uuid
+  user              User              @relation(fields: [userId], references: [id])
+  customer          Customer?         @relation(fields: [customerId], references: [id])
+  branch            Branch?           @relation(fields: [branchId], references: [id])
+  cancelledBy       User?             @relation("CancelledSales", fields: [cancelledByUserId], references: [id])
+  lastRefundedBy    User?             @relation("RefundedSales", fields: [lastRefundedById], references: [id])
+  saleDetails       SaleDetail[]
+  returns           SaleReturn[]
+  commercialEvents  CommercialEvent[]
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
 
   @@index([userId])
   @@index([customerId])
   @@index([branchId])
+  @@index([status])
+  @@index([paymentMethod])
   @@map("sales")
 }
 
 model SaleDetail {
-  id        String   @id @default(uuid()) @db.Uuid
-  saleId    String   @map("sale_id") @db.Uuid
-  productId String   @map("product_id") @db.Uuid
-  cantidad  Int
-  precio    Decimal  @db.Decimal(10, 2)
-  sale      Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
-  product   Product  @relation(fields: [productId], references: [id])
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id               String           @id @default(uuid()) @db.Uuid
+  saleId           String           @map("sale_id") @db.Uuid
+  productId        String           @map("product_id") @db.Uuid
+  offerId          String?          @map("offer_id") @db.Uuid
+  cantidad         Int
+  returnedQuantity Int              @default(0) @map("returned_quantity")
+  precio           Decimal          @db.Decimal(10, 2)
+  unitDiscount     Decimal          @default(0) @map("unit_discount") @db.Decimal(10, 2)
+  lineSubtotal     Decimal          @map("line_subtotal") @db.Decimal(10, 2)
+  lineDiscount     Decimal          @default(0) @map("line_discount") @db.Decimal(10, 2)
+  lineTotal        Decimal          @map("line_total") @db.Decimal(10, 2)
+  sale             Sale             @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product          Product          @relation(fields: [productId], references: [id])
+  offer            Offer?           @relation(fields: [offerId], references: [id])
+  returnItems      SaleReturnItem[]
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
 
   @@index([saleId])
   @@index([productId])
+  @@index([offerId])
   @@map("sale_details")
+}
+
+model SaleReturn {
+  id            String           @id @default(uuid()) @db.Uuid
+  saleId         String           @map("sale_id") @db.Uuid
+  branchId       String?          @map("branch_id") @db.Uuid
+  processedById  String           @map("processed_by_id") @db.Uuid
+  reason         String
+  notes          String?
+  totalAmount    Decimal          @map("total_amount") @db.Decimal(10, 2)
+  isFullReturn   Boolean          @default(false) @map("is_full_return")
+  sale           Sale             @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  branch         Branch?          @relation(fields: [branchId], references: [id])
+  processedBy    User             @relation(fields: [processedById], references: [id])
+  items          SaleReturnItem[]
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  @@index([saleId])
+  @@index([branchId])
+  @@index([processedById])
+  @@map("sale_returns")
+}
+
+model SaleReturnItem {
+  id            String      @id @default(uuid()) @db.Uuid
+  saleReturnId   String      @map("sale_return_id") @db.Uuid
+  saleDetailId   String      @map("sale_detail_id") @db.Uuid
+  quantity       Int
+  amount         Decimal     @db.Decimal(10, 2)
+  saleReturn     SaleReturn  @relation(fields: [saleReturnId], references: [id], onDelete: Cascade)
+  saleDetail     SaleDetail  @relation(fields: [saleDetailId], references: [id])
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  @@index([saleReturnId])
+  @@index([saleDetailId])
+  @@map("sale_return_items")
 }
 
 model InventoryMovement {
@@ -218,6 +352,8 @@ model Branch {
   direccion    String
   sales        Sale[]
   branchStocks BranchStock[]
+  returns      SaleReturn[]
+  commercialEvents CommercialEvent[]
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
 
@@ -267,4 +403,28 @@ model SystemAuditLog {
 
   @@index([userId])
   @@map("system_audit_logs")
+}
+
+model CommercialEvent {
+  id            String              @id @default(uuid()) @db.Uuid
+  saleId         String?             @map("sale_id") @db.Uuid
+  branchId       String?             @map("branch_id") @db.Uuid
+  userId         String?             @map("user_id") @db.Uuid
+  type           CommercialEventType
+  action         String              @db.VarChar(120)
+  folio          String?             @db.VarChar(32)
+  description    String
+  reason         String?
+  metadata       Json                @default("{}")
+  sale           Sale?               @relation(fields: [saleId], references: [id])
+  branch         Branch?             @relation(fields: [branchId], references: [id])
+  user           User?               @relation(fields: [userId], references: [id])
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+
+  @@index([saleId])
+  @@index([branchId])
+  @@index([userId])
+  @@index([type])
+  @@map("commercial_events")
 }

@@ -1,12 +1,13 @@
 "use client";
 
 import { Archive, AlertTriangle, BadgeCheck, PackageX } from "lucide-react";
+import { CommercialSummaryGrid } from "@/components/commercial/CommercialUI";
 
 const cards = [
   {
     key: "total",
-    title: "Productos totales",
-    description: "Inventario registrado en el panel",
+    title: "Registros totales",
+    description: "Productos cargados en inventario",
     icon: Archive,
     bg: "bg-[#FFF8DB]",
     text: "text-[#8A5C00]",
@@ -14,7 +15,7 @@ const cards = [
   {
     key: "active",
     title: "Activos",
-    description: "Productos visibles para operación",
+    description: "Disponibles para operacion comercial",
     icon: BadgeCheck,
     bg: "bg-[#EAFBF1]",
     text: "text-[#047857]",
@@ -22,7 +23,7 @@ const cards = [
   {
     key: "inactive",
     title: "Inactivos",
-    description: "Productos pausados o fuera de catálogo",
+    description: "Pausados o fuera del flujo operativo",
     icon: PackageX,
     bg: "bg-[#EEF2FF]",
     text: "text-[#4338CA]",
@@ -30,7 +31,7 @@ const cards = [
   {
     key: "lowStock",
     title: "Bajo stock",
-    description: "Revisar reabasto o ajuste de mínimos",
+    description: "Revisar reabasto o ajuste de minimos",
     icon: AlertTriangle,
     bg: "bg-[#FFF1F2]",
     text: "text-[#BE123C]",
@@ -39,31 +40,16 @@ const cards = [
 
 export default function ProductSummaryCards({ summary }) {
   return (
-    <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-      {cards.map((card) => {
-        const Icon = card.icon;
-        return (
-          <article
-            key={card.key}
-            className="rounded-3xl border border-white/70 bg-white/95 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.08)]"
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#9CA3AF]">
-                  {card.title}
-                </p>
-                <p className="mt-3 text-3xl font-extrabold text-[#1F2933]">
-                  {summary[card.key]}
-                </p>
-                <p className="mt-2 text-sm text-[#4B5563]">{card.description}</p>
-              </div>
-              <div className={`grid h-12 w-12 place-items-center rounded-2xl ${card.bg}`}>
-                <Icon className={`h-6 w-6 ${card.text}`} />
-              </div>
-            </div>
-          </article>
-        );
-      })}
-    </section>
+    <CommercialSummaryGrid
+      items={cards.map((card) => ({
+        key: card.key,
+        label: card.title,
+        value: summary[card.key],
+        description: card.description,
+        icon: card.icon,
+        bgClassName: card.bg,
+        iconClassName: card.text,
+      }))}
+    />
   );
 }

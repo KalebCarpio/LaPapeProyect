@@ -2,6 +2,7 @@
 
 import { Search, SlidersHorizontal, RotateCcw } from "lucide-react";
 import { PrimaryButton, SecondaryButton } from "@/components/Buttons";
+import { CommercialFilterCard } from "@/components/commercial/CommercialUI";
 
 export default function ProductFilters({
   filters,
@@ -9,31 +10,26 @@ export default function ProductFilters({
   onChange,
   onClear,
 }) {
-  return (
-    <section className="rounded-3xl border border-[#FFE9A8] bg-white/95 p-5 shadow-[0_18px_40px_rgba(245,158,11,0.12)]">
-      <div className="flex flex-col gap-5">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#9CA3AF]">
-              Búsqueda y filtros
-            </p>
-            <p className="mt-1 text-sm text-[#4B5563]">
-              Localiza productos rápido por nombre, SKU o estado de inventario.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <SecondaryButton type="button" className="px-5" onClick={onClear}>
-              <RotateCcw size={16} />
-              Limpiar filtros
-            </SecondaryButton>
-            <PrimaryButton type="button" className="px-5">
-              <SlidersHorizontal size={16} />
-              Filtros activos
-            </PrimaryButton>
-          </div>
-        </div>
+  const activeFilterCount = [filters.query, filters.category, filters.brand]
+    .filter(Boolean).length + (filters.status !== "all" ? 1 : 0) + (filters.stock !== "all" ? 1 : 0);
 
-        <div className="grid gap-4 lg:grid-cols-[2fr,1fr,1fr,1fr,1fr]">
+  return (
+    <CommercialFilterCard
+      subtitle="Localiza productos por nombre, SKU, categoria, marca, estado o nivel de stock."
+      actions={
+        <>
+          <SecondaryButton type="button" className="px-5" onClick={onClear}>
+            <RotateCcw size={16} />
+            Limpiar filtros
+          </SecondaryButton>
+          <PrimaryButton type="button" className="px-5">
+            <SlidersHorizontal size={16} />
+            {activeFilterCount > 0 ? `${activeFilterCount} filtros activos` : "Sin filtros activos"}
+          </PrimaryButton>
+        </>
+      }
+    >
+      <div className="grid gap-4 lg:grid-cols-[2fr,1fr,1fr,1fr,1fr]">
           <label className="flex items-center gap-3 rounded-2xl border-2 border-[#E5E7EB] bg-[#FCFCFD] px-4 py-3 focus-within:border-[#4A90E2]">
             <Search size={18} className="text-[#6B7280]" />
             <input
@@ -89,8 +85,7 @@ export default function ProductFilters({
             <option value="low">Bajo stock</option>
             <option value="out">Sin stock</option>
           </select>
-        </div>
       </div>
-    </section>
+    </CommercialFilterCard>
   );
 }

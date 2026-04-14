@@ -1,7 +1,8 @@
 "use client";
 
-import { CheckSquare, Download, Square, X } from "lucide-react";
+import { CheckSquare, Download, Square } from "lucide-react";
 import { PrimaryButton, SecondaryButton } from "@/components/Buttons";
+import { CommercialModalShell } from "@/components/commercial/CommercialUI";
 
 export default function ProductExportModal({
   open,
@@ -19,27 +20,13 @@ export default function ProductExportModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[75] flex items-center justify-center bg-[#111827]/45 px-4 py-6 backdrop-blur-sm">
-      <div className="w-full max-w-4xl rounded-[32px] border border-white/60 bg-[#FFFCF4] shadow-[0_30px_80px_rgba(15,23,42,0.28)]">
-        <div className="flex items-start justify-between gap-4 border-b border-[#F6E7B8] px-6 py-5 sm:px-8">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C47A00]">
-              Exportación comercial
-            </p>
-            <h2 className="mt-2 text-2xl font-bold text-[#1F2933]">Exportar productos a CSV</h2>
-            <p className="mt-1 text-sm text-[#6B7280]">
-              Elige qué columnas quieres incluir en el archivo para compartir o trabajar fuera del sistema.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="grid h-11 w-11 place-items-center rounded-full border border-[#E5E7EB] bg-white text-[#4B5563] transition hover:border-[#F59E0B] hover:text-[#C47A00]"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
+    <CommercialModalShell
+      eyebrow="Inventario"
+      title="Exportar inventario a CSV"
+      subtitle="Elige que columnas quieres incluir para compartir o trabajar fuera del sistema."
+      maxWidthClassName="max-w-4xl"
+      onClose={onClose}
+    >
         <div className="grid gap-6 px-6 py-6 sm:px-8 lg:grid-cols-[1fr,0.72fr]">
           <div className="rounded-3xl border border-[#E5E7EB] bg-white p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -89,7 +76,7 @@ export default function ProductExportModal({
               <p className="text-sm font-semibold text-[#8A5C00]">Resumen de exportación</p>
               <p className="mt-3 text-3xl font-extrabold text-[#1F2933]">{productCount}</p>
               <p className="mt-2 text-sm text-[#9A6700]">
-                productos del listado actual se exportarán con las columnas seleccionadas.
+                registros del inventario actual se exportaran con las columnas seleccionadas.
               </p>
             </div>
 
@@ -112,7 +99,6 @@ export default function ProductExportModal({
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </CommercialModalShell>
   );
 }

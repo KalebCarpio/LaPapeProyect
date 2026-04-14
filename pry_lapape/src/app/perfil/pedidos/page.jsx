@@ -1,15 +1,11 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import RoleLayout from "@/components/RoleLayout";
 import { ordersGet } from "@/lib/storage";
 
 export default function PerfilPedidosPage() {
-  const [orders, setOrders] = useState([]);
-
-  useEffect(() => {
-    setOrders(ordersGet());
-  }, []);
+  const orders = useMemo(() => ordersGet(), []);
 
   return (
     <RoleLayout

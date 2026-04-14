@@ -12,6 +12,12 @@ import { connectPrisma, disconnectPrisma } from "./lib/prisma.js";
 
 import authRoutes from "./routes/auth.routes.js";
 import productRoutes from "./routes/product.routes.js";
+import categoryRoutes from "./routes/category.routes.js";
+import offerRoutes from "./routes/offer.routes.js";
+import branchRoutes from "./routes/branch.routes.js";
+import saleRoutes from "./routes/sale.routes.js";
+import posRoutes from "./routes/pos.routes.js";
+import forecastRoutes from "./routes/forecast.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 
 // ✅ Importa modelos para que sequelize.sync() los cree
@@ -131,6 +137,12 @@ app.get("/test-email", async (_req, res) => {
 // ✅ Montaje de rutas principales
 app.use("/auth", authRoutes);
 app.use("/products", productRoutes);
+app.use("/categories", categoryRoutes);
+app.use("/offers", offerRoutes);
+app.use("/branches", branchRoutes);
+app.use("/pos", posRoutes);
+app.use("/sales", saleRoutes);
+app.use("/forecast", forecastRoutes);
 app.use("/admin", adminRoutes);
 
 /* ------------------------------------------------------------------ */

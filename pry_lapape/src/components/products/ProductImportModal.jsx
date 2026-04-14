@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Download, FileUp, UploadCloud, X } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { Download, FileUp, UploadCloud } from "lucide-react";
 import { PrimaryButton, SecondaryButton } from "@/components/Buttons";
+import { CommercialModalShell } from "@/components/commercial/CommercialUI";
 
 function ReferenceSheet() {
   const columns = [
@@ -58,10 +59,6 @@ export default function ProductImportModal({
   const inputRef = useRef(null);
   const [dragging, setDragging] = useState(false);
 
-  useEffect(() => {
-    if (!open) setDragging(false);
-  }, [open]);
-
   const fileLabel = useMemo(() => {
     if (!selectedFile) return "Aún no has seleccionado ningún archivo.";
     return `${selectedFile.name} · ${(selectedFile.size / 1024).toFixed(1)} KB`;
@@ -77,27 +74,13 @@ export default function ProductImportModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[75] flex items-center justify-center bg-[#111827]/45 px-4 py-6 backdrop-blur-sm">
-      <div className="max-h-[92vh] w-full max-w-6xl overflow-y-auto rounded-[32px] border border-white/60 bg-[#FFFCF4] shadow-[0_30px_80px_rgba(15,23,42,0.28)]">
-        <div className="flex items-start justify-between gap-4 border-b border-[#F6E7B8] px-6 py-5 sm:px-8">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C47A00]">
-              Importación masiva
-            </p>
-            <h2 className="mt-2 text-2xl font-bold text-[#1F2933]">Importar productos desde CSV</h2>
-            <p className="mt-1 text-sm text-[#6B7280]">
-              Usa la plantilla oficial, arrastra tu archivo y valida la estructura antes de cargarlo.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="grid h-11 w-11 place-items-center rounded-full border border-[#E5E7EB] bg-white text-[#4B5563] transition hover:border-[#F59E0B] hover:text-[#C47A00]"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
+    <CommercialModalShell
+      eyebrow="Inventario"
+      title="Importar inventario desde CSV"
+      subtitle="Usa la plantilla oficial, arrastra tu archivo y valida la estructura antes de cargarlo."
+      maxWidthClassName="max-w-6xl"
+      onClose={onClose}
+    >
         <div className="grid gap-6 px-6 py-6 sm:px-8 lg:grid-cols-[1.1fr,0.9fr]">
           <div className="space-y-5">
             <div
@@ -189,7 +172,6 @@ export default function ProductImportModal({
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </CommercialModalShell>
   );
 }

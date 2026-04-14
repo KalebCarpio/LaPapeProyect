@@ -9,6 +9,7 @@ import {
   PackageSearch,
 } from "lucide-react";
 import ProductStatusBadge from "@/components/products/ProductStatusBadge";
+import { CommercialEmptyState } from "@/components/commercial/CommercialUI";
 
 function formatCurrency(value) {
   return new Intl.NumberFormat("es-MX", {
@@ -33,14 +34,12 @@ export default function ProductTable({
 }) {
   if (products.length === 0) {
     return (
-      <section className="rounded-3xl border border-dashed border-[#E5E7EB] bg-white/90 px-6 py-14 text-center shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
-        <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-[#FFF7E6]">
-          <PackageSearch className="h-8 w-8 text-[#C47A00]" />
-        </div>
-        <h3 className="mt-5 text-xl font-bold text-[#1F2933]">No hay productos para mostrar</h3>
-        <p className="mt-2 text-sm text-[#6B7280]">
-          Ajusta los filtros o crea un producto nuevo para empezar a administrar tu catálogo.
-        </p>
+      <section className="rounded-3xl border border-dashed border-[#E5E7EB] bg-white/90 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
+        <CommercialEmptyState
+          icon={PackageSearch}
+          title="No hay registros de inventario para mostrar"
+          description="Ajusta los filtros o da de alta un producto para empezar a operar esta seccion."
+        />
       </section>
     );
   }

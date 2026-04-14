@@ -1,6 +1,7 @@
 "use client";
 
-import { CalendarDays, Package, Tag, X } from "lucide-react";
+import { CalendarDays, Package, Tag } from "lucide-react";
+import { CommercialModalShell } from "@/components/commercial/CommercialUI";
 import ProductStatusBadge from "@/components/products/ProductStatusBadge";
 
 function formatCurrency(value) {
@@ -30,27 +31,13 @@ export default function ProductDetailModal({ open, product, onClose }) {
   ];
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[#111827]/45 px-4 py-6 backdrop-blur-sm">
-      <div className="w-full max-w-4xl overflow-hidden rounded-[32px] border border-white/60 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.28)]">
-        <div className="flex items-start justify-between gap-4 border-b border-[#F3F4F6] px-6 py-5 sm:px-8">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C47A00]">
-              Detalle rápido
-            </p>
-            <h2 className="mt-2 text-2xl font-bold text-[#1F2933]">{product.name}</h2>
-            <p className="mt-1 text-sm text-[#6B7280]">
-              Consulta la ficha comercial y operativa del producto seleccionado.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="grid h-11 w-11 place-items-center rounded-full border border-[#E5E7EB] bg-white text-[#4B5563] transition hover:border-[#F59E0B] hover:text-[#C47A00]"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
+    <CommercialModalShell
+      eyebrow="Inventario"
+      title={product.name}
+      subtitle="Consulta la ficha comercial y operativa del producto seleccionado."
+      maxWidthClassName="max-w-4xl"
+      onClose={onClose}
+    >
         <div className="grid gap-6 px-6 py-6 sm:px-8 lg:grid-cols-[0.9fr,1.1fr]">
           <div className="space-y-5">
             <div className="overflow-hidden rounded-3xl border border-[#F3F4F6] bg-[#FFFDF5]">
@@ -61,10 +48,10 @@ export default function ProductDetailModal({ open, product, onClose }) {
                 <div className="grid h-72 place-items-center">
                   <div className="text-center">
                     <Package className="mx-auto h-10 w-10 text-[#C47A00]" />
-                    <p className="mt-3 font-semibold text-[#1F2933]">Sin imagen disponible</p>
-                    <p className="mt-1 text-sm text-[#6B7280]">
-                      Puedes agregar una URL desde la edición del producto.
-                    </p>
+                <p className="mt-3 font-semibold text-[#1F2933]">Sin imagen disponible</p>
+                <p className="mt-1 text-sm text-[#6B7280]">
+                      Puedes agregar una URL desde la edicion del registro de inventario.
+                </p>
                   </div>
                 </div>
               )}
@@ -82,7 +69,7 @@ export default function ProductDetailModal({ open, product, onClose }) {
             <div className="rounded-3xl border border-[#E5E7EB] bg-[#FCFCFD] p-5">
               <div className="flex items-center gap-2 text-[#1D6FD1]">
                 <Tag size={18} />
-                <p className="font-semibold">Ficha del producto</p>
+                <p className="font-semibold">Ficha del inventario</p>
               </div>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 {fields.map((field) => (
@@ -125,7 +112,6 @@ export default function ProductDetailModal({ open, product, onClose }) {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </CommercialModalShell>
   );
 }

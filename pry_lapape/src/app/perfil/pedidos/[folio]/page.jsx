@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { useParams } from "next/navigation";
 import Header from "@/components/Header";
 import { ordersGet } from "@/lib/storage";
@@ -7,11 +7,8 @@ import { ordersGet } from "@/lib/storage";
 export default function PedidoDetallePage() {
   const params = useParams();
   const folio = params?.folio;
-  const [order, setOrder] = useState(null);
-
-  useEffect(() => {
-    const nextOrder = ordersGet().find((item) => item.folio === folio) || null;
-    setOrder(nextOrder);
+  const order = useMemo(() => {
+    return ordersGet().find((item) => item.folio === folio) || null;
   }, [folio]);
 
   return (

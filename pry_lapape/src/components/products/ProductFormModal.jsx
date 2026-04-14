@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { ImagePlus, Save, X } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ImagePlus, Save } from "lucide-react";
 import { PrimaryButton, SecondaryButton } from "@/components/Buttons";
+import { CommercialModalShell } from "@/components/commercial/CommercialUI";
 import Input from "@/components/Inputs";
 
 const initialForm = {
@@ -17,43 +18,39 @@ const initialForm = {
   isActive: true,
 };
 
+function buildInitialForm(product) {
+  return product
+    ? {
+        name: product.name || "",
+        price: String(product.price ?? ""),
+        stock: String(product.stock ?? ""),
+        sku: product.sku || "",
+        description: product.description || "",
+        category: product.category || "",
+        brand: product.brand || "",
+        imageUrl: product.imageUrl || "",
+        isActive: Boolean(product.isActive),
+      }
+    : initialForm;
+}
+
 export default function ProductFormModal({
   open,
   mode,
   product,
+  categories = [],
   saving,
   onClose,
   onSubmit,
 }) {
-  const [form, setForm] = useState(initialForm);
+  const [form, setForm] = useState(() => buildInitialForm(product));
   const [errors, setErrors] = useState({});
 
-  useEffect(() => {
-    if (!open) return;
-
-    setForm(
-      product
-        ? {
-            name: product.name || "",
-            price: String(product.price ?? ""),
-            stock: String(product.stock ?? ""),
-            sku: product.sku || "",
-            description: product.description || "",
-            category: product.category || "",
-            brand: product.brand || "",
-            imageUrl: product.imageUrl || "",
-            isActive: Boolean(product.isActive),
-          }
-        : initialForm
-    );
-    setErrors({});
-  }, [open, product]);
-
-  const title = mode === "edit" ? "Editar producto" : "Nuevo producto";
+  const title = mode === "edit" ? "Editar registro de inventario" : "Nuevo registro de inventario";
   const description =
     mode === "edit"
-      ? "Actualiza la información comercial y operativa del producto."
-      : "Registra rápido un producto con los datos mínimos y completa el resto cuando lo necesites.";
+      ? "Actualiza informacion comercial, stock y clasificacion del producto."
+      : "Registra un producto con la informacion minima y asignalo a una categoria operativa.";
 
   const imagePreview = useMemo(() => form.imageUrl.trim(), [form.imageUrl]);
 
@@ -93,25 +90,7 @@ export default function ProductFormModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[#111827]/45 px-4 py-6 backdrop-blur-sm">
-      <div className="max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-[32px] border border-white/60 bg-[#FFFCF4] shadow-[0_30px_80px_rgba(15,23,42,0.28)]">
-        <div className="flex items-start justify-between gap-4 border-b border-[#F6E7B8] px-6 py-5 sm:px-8">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#C47A00]">
-              Gestión comercial
-            </p>
-            <h2 className="mt-2 text-2xl font-bold text-[#1F2933]">{title}</h2>
-            <p className="mt-1 text-sm text-[#6B7280]">{description}</p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="grid h-11 w-11 place-items-center rounded-full border border-[#E5E7EB] bg-white text-[#4B5563] transition hover:border-[#F59E0B] hover:text-[#C47A00]"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
+    <CommercialModalShell title={title} subtitle={description} maxWidthClassName="max-w-5xl" onClose={onClose}>
         <form onSubmit={handleSubmit} className="grid gap-6 px-6 py-6 sm:px-8 lg:grid-cols-[1.2fr,0.8fr]">
           <div className="space-y-5">
             <div className="grid gap-4 md:grid-cols-2">
@@ -162,12 +141,21 @@ export default function ProductFormModal({
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <Input
-                label="Categoría (opcional)"
-                value={form.category}
-                onChange={(event) => handleChange("category", event.target.value)}
-                placeholder="Ej. Cuadernos"
-              />
+              <label className="flex flex-col gap-2">
+                <span className="text-sm text-[#333]">Categoria operativa</span>
+                <select
+                  value={form.category}
+                  onChange={(event) => handleChange("category", event.target.value)}
+                  className="h-12 rounded-xl border-2 border-[#E0E0E0] bg-white px-3 text-[#1C1C1C] outline-none transition focus:border-[#4A90E2]"
+                >
+                  <option value="">Sin categoria asignada</option>
+                  {categories.map((category) => (
+                    <option key={category.id || category.name} value={category.name}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <Input
                 label="Marca (opcional)"
                 value={form.brand}
@@ -256,7 +244,7 @@ export default function ProductFormModal({
             <div className="rounded-3xl border border-[#E5E7EB] bg-white p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
               <p className="text-sm font-semibold text-[#1F2933]">Alta rápida recomendada</p>
               <p className="mt-2 text-sm text-[#6B7280]">
-                Para registrar un producto en operación diaria solo necesitas:
+                Para registrar un producto en operacion diaria solo necesitas:
               </p>
               <ul className="mt-3 space-y-2 text-sm text-[#374151]">
                 <li>Nombre</li>
@@ -264,7 +252,7 @@ export default function ProductFormModal({
                 <li>Stock</li>
               </ul>
               <p className="mt-3 text-sm text-[#6B7280]">
-                SKU, marca, categoría, descripción e imagen pueden completarse después sin detener la captura.
+                SKU, marca, categoria, descripcion e imagen pueden completarse despues sin detener la captura.
               </p>
             </div>
           </div>
@@ -275,11 +263,10 @@ export default function ProductFormModal({
             </SecondaryButton>
             <PrimaryButton type="submit" disabled={saving}>
               <Save size={16} />
-              {saving ? "Guardando..." : mode === "edit" ? "Guardar cambios" : "Crear producto"}
+              {saving ? "Guardando..." : mode === "edit" ? "Guardar cambios" : "Crear registro"}
             </PrimaryButton>
           </div>
         </form>
-      </div>
-    </div>
+    </CommercialModalShell>
   );
 }

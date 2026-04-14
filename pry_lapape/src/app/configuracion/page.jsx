@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
+import AdminShell from "@/components/AdminShell";
 import Header from "@/components/Header";
 import Input from "@/components/Inputs";
 import { PrimaryButton } from "@/components/Buttons";
@@ -58,6 +59,8 @@ const resolveHomePath = (user) => {
 export default function ConfigPage() {
   const { user: authUser, token, login: authLogin } = useAuth();
   const router = useRouter();
+  const role = String(authUser?.rol || authUser?.role || "").toUpperCase();
+  const isOwner = role === "DUENO";
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -150,11 +153,8 @@ export default function ConfigPage() {
     }
   };
 
-  return (
-    <>
-      <Header />
-      <main className="min-h-[calc(100vh-64px)] bg-gradient-to-b from-[#FFF9E6] via-[#FDFDFE] to-white">
-        <div className="max-w-6xl mx-auto px-4 py-10 lg:py-14">
+  const content = (
+    <div className="max-w-6xl mx-auto px-4 py-10 lg:py-14">
           {/* Encabezado + resumen */}
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 mb-8 lg:mb-10">
             <div className="flex-1">
@@ -371,6 +371,24 @@ export default function ConfigPage() {
             </form>
           </div>
         </div>
+  );
+
+  if (isOwner) {
+    return (
+      <AdminShell
+        title="Configuracion"
+        subtitle="Ajusta el metodo de acceso y las preferencias de seguridad sin salir del panel administrativo."
+      >
+        {content}
+      </AdminShell>
+    );
+  }
+
+  return (
+    <>
+      <Header />
+      <main className="min-h-[calc(100vh-64px)] bg-gradient-to-b from-[#FFF9E6] via-[#FDFDFE] to-white">
+        {content}
       </main>
     </>
   );
